@@ -9,12 +9,17 @@ export const defaultAxios = axios.create({
   },
 });
 
-export function apiClient(url: string, data = {}, method = "POST") {
+export function apiClient(
+  url: string,
+  data = {},
+  method = "POST",
+  headers = {}
+) {
   return new Promise((resolve, reject) => {
     defaultAxios({
       method,
       url,
-      headers: {},
+      headers: { ...headers },
       data,
     })
       .then((res) => {

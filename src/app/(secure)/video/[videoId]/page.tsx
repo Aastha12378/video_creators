@@ -9,6 +9,7 @@ import Sidebar from "@/components/Sidebar";
 import { apiClient } from "@/utils/apiClient";
 import { scriptType } from "@/constant";
 import { VideoDataType } from "@/types";
+import { createClient, Video } from 'pexels';
 
 async function getData(videoId: string) {
   const res = (await apiClient(
@@ -24,12 +25,48 @@ export default async function DashboardPage({
 }: {
   params: { videoId: string };
 }) {
-  const data: VideoDataType = await getData(params.videoId);
+  const [step, setStep] = React.useState(0);
+  const [data, setData] = React.useState<VideoDataType | null>(null);
+  const [suggestedVideos, setSuggestedVideos] = React.useState<Video[]>([]);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const videoData: VideoDataType = await getData(params.videoId);
+      setData(videoData);
+      if (videoData.script) {
+        setStep(1);
+      }
+      if (videoData.videoURL) {
+        setStep(5);
+      }
+    };
+
+    fetchData();
+  }, [params.videoId]);
 
   const generateVideo = async () => {
-    apiClient("/api/video/" + params.videoId)
+    setStep(2)
+    const client = createClient('hPds4JSGob2ANlkoFkky2tDoG77H1a8oCx6MOewnF5Evmldd1qsn8wP4');
+    const query = data?.keywords?.join(',') || ""
+
+    client.videos.search({ query, per_page: 10 }).then(async (video) => {
+      if ('videos' in video) {
+        setSuggestedVideos(video.videos)
+        setStep(3)
+      }
+    }).catch(err => {
+      console.log(err)
+    })
+  };
+
+  const onSelectVideo = (videoUrl: string) => {
+    setStep(4)
+    apiClient("/api/video/" + params.videoId, { videoURL: videoUrl }, "PATCH")
       .then((res: any) => {
-        console.log("file: page.tsx:44  .then  res:", res);
+        setData(res);
+        if (res.videoURL) {
+          setStep(5);
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -61,7 +98,7 @@ export default async function DashboardPage({
               </div>
             </div>
           </div>
-          <div className="flex flex-row items-center justify-center pl-[330px] w-[91%]">
+          {step >= 1 && <div className="flex flex-row items-center justify-center pl-[330px] w-[91%]">
             <div className="flex flex-row gap-2.5 items-end justify-between w-full">
               <div className="bg-teal-50 flex flex-col gap-2.5 items-center justify-start p-5 rounded-lg">
                 <Text as="p">
@@ -113,8 +150,8 @@ export default async function DashboardPage({
                 className="h-[38px] mt-[131px] object-cover rounded-lg"
               />
             </div>
-          </div>
-          <div className="flex flex-row items-center justify-start pr-[330px] w-[91%]">
+          </div>}
+          {step >= 2 && <div className="flex flex-row items-center justify-start pr-[330px] w-[91%]">
             <div className="flex flex-row gap-2.5 items-end w-full">
               <Img
                 src="/images/img_user_avatar_1.png"
@@ -123,14 +160,62 @@ export default async function DashboardPage({
               />
               <div className="bg-white-A700 flex flex-row items-center justify-start p-5 rounded-lg">
                 <div className="flex flex-row items-center justify-start w-full">
-                    <Text as="p">
-                      Generate video for this script.
-                    </Text>
+                  <Text as="p">
+                    Generate video for this script.
+                  </Text>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="flex flex-row items-center justify-center pl-[330px] w-[91%]">
+          </div>}
+          {step >= 3 && <div className="flex flex-row items-center justify-center pl-[100px] w-[91%]">
+            <div className="flex flex-row gap-2.5 items-end justify-between w-full">
+              <div className="bg-teal-50 flex flex-col gap-2.5 items-start justify-start p-5 rounded-lg">
+                {/* <Img
+                  src="/images/img_frame_47688.png"
+                  alt="frame_47688"
+                  className="object-cover rounded-[15px] w-[89%]"
+                /> */}
+                <Text as="p">
+                  Please select video of your choice
+                </Text>
+                <div className="grid grid-cols-3">
+                  {
+                    suggestedVideos?.map(video => {
+                      return <div className="relative">
+                        <video width="400" controls className="radius-[15px]">
+                          <source src={`${video?.video_files?.[0]?.link}.mp4`} />
+                          Your browser does not support HTML video.
+                        </video>
+                        <input onClick={() => onSelectVideo(`${video?.video_files?.[0]?.link}.mp4`)} type="checkbox" className="absolute top-[5px] right-[5px] w-[15px]" />
+                      </div>
+                    })
+                  }
+                </div>
+              </div>
+              <Img
+                src="/images/img_chatgpt_avatar_1.png"
+                alt="chatgpt_avatar_One"
+                className="h-[38px] mt-[393px] object-cover rounded-lg"
+              />
+            </div>
+          </div>}
+          {step >= 4 && <div className="flex flex-row items-center justify-start pr-[330px] w-[91%]">
+            <div className="flex flex-row gap-2.5 items-end w-full">
+              <Img
+                src="/images/img_user_avatar_1.png"
+                alt="user_avatar_One_One"
+                className="h-[38px] object-cover rounded-lg"
+              />
+              <div className="bg-white-A700 flex flex-row items-center justify-start p-5 rounded-lg">
+                <div className="flex flex-row items-center justify-start w-full">
+                  <Text as="p">
+                    I choose this video
+                  </Text>
+                </div>
+              </div>
+            </div>
+          </div>}
+          {step >= 5 && <div className="flex flex-row items-center justify-center pl-[330px] w-[91%]">
             <div className="flex flex-row gap-2.5 items-end justify-between w-full">
               <div className="bg-teal-50 flex flex-col gap-2.5 items-start justify-start p-5 rounded-lg">
                 <Img
@@ -183,9 +268,9 @@ export default async function DashboardPage({
                 className="h-[38px] mt-[393px] object-cover rounded-lg"
               />
             </div>
-          </div>
+          </div>}
         </div>
       </div>
-    </div>
+    </div >
   );
 }

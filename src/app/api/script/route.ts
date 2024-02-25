@@ -13,20 +13,28 @@ export async function POST(req: NextRequest) {
   if (!category) {
     return NextResponse.json(
       { message: "Category is required" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY;
-  const url = "https://api.openai.com/v1/chat/completions";
 
   const assistantMsg =
     "You are the AI programming Expert, specializing in generating script for youtube video on given user's category.";
 
-  const userMsg =
-    "You are tasked with generating 15 sec script for my you tube video on " +
-    category +
-    " category.\n\nScript is:";
+  const userMsg = `You are tasked with generating 15 sec script for my you tube video on ${category} category.
+  
+Also generate some keywords of that script. So that i find related videos which are related to your given scripts by using that keywords.
+
+return output in given json format :{
+  script:"",
+  keywords:[], //it should be array of strings
+}
+**NOTE:-**
+- always return json without any extra text
+
+Output json is:
+  `;
 
   const body = JSON.stringify({
     messages: [
@@ -38,7 +46,7 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -47,14 +55,15 @@ export async function POST(req: NextRequest) {
       body,
     });
     const data = await response.json();
-    const script = data?.choices?.[0]?.message?.content;
+    const scriptData = JSON.parse(data?.choices?.[0]?.message?.content);
 
     // Connect to the MongoDB client
     await connectDB();
 
     // Insert the script into the collection
     const scriptDoc = new Video({
-      script,
+      script: scriptData.script,
+      keywords: scriptData.keywords,
       scriptType: scriptType.Category,
       category,
     });
