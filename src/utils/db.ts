@@ -29,7 +29,7 @@ async function connectDB() {
       bufferCommands: false,
     };
 
-    cached.promise = connect("mongodb://localhost:27017/video-creator", opts)
+    cached.promise = connect("mongodb://127.0.0.1:27017/video-creator", opts)
       .then((mongoose) => {
         console.log("✅ New connection established");
         return mongoose;

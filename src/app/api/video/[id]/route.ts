@@ -35,11 +35,11 @@ export async function POST(
 
   const mp3 = await openai.audio.speech.create({
     model: "tts-1",
-    voice: "alloy",
-    input: video.script,
+    voice: "onyx",
+    input: video.script.split(".").join("\n\n"),
   });
   const speechFile = path.resolve(
-    `src/assets/voice/${video?._id || "speech"}.mp3`
+    `voice/${video?._id || "speech"}.mp3`
   );
   const buffer = Buffer.from(await mp3.arrayBuffer());
   await fs.promises.writeFile(speechFile, buffer);
@@ -76,18 +76,18 @@ export async function PATCH(
 
   const mp3 = await openai.audio.speech.create({
     model: "tts-1",
-    voice: "alloy",
-    input: video.script,
+    voice: "onyx",
+    input: video.script.split(".").join("\n\n"),
   });
   const speechFile = path.resolve(
-    `src/assets/voice/${video?._id || "speech"}.mp3`
+    `public/voice/${video?._id || "speech"}.mp3`
   );
   const buffer = Buffer.from(await mp3.arrayBuffer());
   await fs.promises.writeFile(speechFile, buffer);
 
   const updatedVideo = (await Video.findByIdAndUpdate(
     id,
-    { $set: { voiceURL: speechFile } },
+    { $set: { voiceURL: speechFile,absolutePath:`voice/${video?._id || "speech"}.mp3` } },
     { new: true }
   )
     .lean()

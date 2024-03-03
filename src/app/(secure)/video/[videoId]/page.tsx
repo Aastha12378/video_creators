@@ -10,6 +10,7 @@ import { apiClient } from "@/utils/apiClient";
 import { scriptType } from "@/constant";
 import { VideoDataType } from "@/types";
 import { createClient, Video } from 'pexels';
+import RemotionRoot from "@/app/(public)/test/page";
 
 async function getData(videoId: string) {
   const res = (await apiClient(
@@ -28,6 +29,7 @@ export default async function DashboardPage({
   const [step, setStep] = React.useState(0);
   const [data, setData] = React.useState<VideoDataType | null>(null);
   const [suggestedVideos, setSuggestedVideos] = React.useState<Video[]>([]);
+  const [videoConfig, setVideoConfig] = React.useState<null | any>(null)
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -48,8 +50,8 @@ export default async function DashboardPage({
     setStep(2)
     const client = createClient('hPds4JSGob2ANlkoFkky2tDoG77H1a8oCx6MOewnF5Evmldd1qsn8wP4');
     const query = data?.keywords?.join(',') || ""
-
-    client.videos.search({ query, per_page: 10 }).then(async (video) => {
+    const orientation = "portrait"
+    client.videos.search({ query, per_page: 10, orientation }).then(async (video) => {
       if ('videos' in video) {
         setSuggestedVideos(video.videos)
         setStep(3)
@@ -63,7 +65,9 @@ export default async function DashboardPage({
     setStep(4)
     apiClient("/api/video/" + params.videoId, { videoURL: videoUrl }, "PATCH")
       .then((res: any) => {
+        console.log(res)
         setData(res);
+        setVideoConfig(res)
         if (res.videoURL) {
           setStep(5);
         }
@@ -215,33 +219,15 @@ export default async function DashboardPage({
               </div>
             </div>
           </div>}
-          {step >= 5 && <div className="flex flex-row items-center justify-center pl-[330px] w-[91%]">
+          {step >= 5 && videoConfig && <div className="flex flex-row items-center justify-center pl-[330px] w-[91%]">
             <div className="flex flex-row gap-2.5 items-end justify-between w-full">
               <div className="bg-teal-50 flex flex-col gap-2.5 items-start justify-start p-5 rounded-lg">
-                <Img
-                  src="/images/img_frame_47688.png"
-                  alt="frame_47688"
-                  className="object-cover rounded-[15px] w-[89%]"
-                />
-                <Text as="p">
-                  Based on your given inputs, the video has been automatically
-                  generated with a male voice. However, you have the option to
-                  customize your video by selecting from the available options
-                  below.
-                </Text>
+                <RemotionRoot videoProps={{
+                  script: videoConfig.script,
+                  voiceURL: videoConfig.absolutePath,
+                  videoURL: videoConfig.videoURL
+                }} />
                 <div className="flex flex-row items-start justify-between w-full">
-                  <div className="bg-teal-100 flex flex-row items-center justify-evenly p-0.5 rounded-[12px] w-[10%]">
-                    <Img
-                      src="/images/img_smiley.svg"
-                      alt="smiley_One"
-                      className="h-5 w-5"
-                    />
-                    <Img
-                      src="/images/img_smiley_sad.svg"
-                      alt="smiley_sad_One"
-                      className="h-5 w-5"
-                    />
-                  </div>
                   <div className="flex flex-row gap-5 items-center justify-between w-auto">
                     <Button
                       color="teal_100_01"
@@ -250,15 +236,6 @@ export default async function DashboardPage({
                     >
                       Download
                     </Button>
-                    {/* <SelectBox
-                      name="language"
-                      placeholder="English"
-                      options={dropDownOptions}
-                      className="w-[35%]"
-                    /> */}
-                    {/* <Button color="teal_100_01" size="xs" className="w-[22px]">
-                      <Img src="/images/img_save.svg" />
-                    </Button> */}
                   </div>
                 </div>
               </div>
