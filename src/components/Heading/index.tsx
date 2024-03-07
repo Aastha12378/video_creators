@@ -3,6 +3,7 @@ import React from "react";
 const sizes = {
   s: "font-semibold text-base text-xl",
   xs: "font-semibold leading-[17px] text-sm",
+  lg: "font-semibold leading-[17px] text-[30px]",
 };
 
 export type HeadingProps = Partial<{

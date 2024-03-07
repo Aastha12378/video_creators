@@ -3,3 +3,7 @@ export const scriptType = {
   Text: 2,
   Script: 3,
 };
+
+export const PlatFormType = {
+  Youtube: 1,
+};

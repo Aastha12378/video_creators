@@ -35,11 +35,16 @@ export default async function DashboardPage({
     const fetchData = async () => {
       const videoData: VideoDataType = await getData(params.videoId);
       setData(videoData);
-      if (videoData.script) {
-        setStep(1);
-      }
+
+
       if (videoData.videoURL) {
         setStep(5);
+        setSuggestedVideos(videoData.suggestedVideos)
+      } else if (videoData.suggestedVideos?.length > 0) {
+        setSuggestedVideos(videoData.suggestedVideos)
+        setStep(3);
+      } else if (videoData.script) {
+        setStep(1);
       }
     };
 
@@ -53,6 +58,12 @@ export default async function DashboardPage({
     const orientation = "portrait"
     client.videos.search({ query, per_page: 10, orientation }).then(async (video) => {
       if ('videos' in video) {
+        apiClient("/api/suggestedVideos", { videoId: params.videoId, suggestedVideos: video.videos }, "POST")
+          .then((res: any) => { })
+          .catch((err) => {
+            console.log(err);
+          });
+
         setSuggestedVideos(video.videos)
         setStep(3)
       }
@@ -96,6 +107,8 @@ export default async function DashboardPage({
                   {data?.scriptType === scriptType.Category && (
                     <Text as="p">
                       Create a content for this category: {data?.category}
+                      <br />
+                      My Video title is: {data.title}
                     </Text>
                   )}
                 </div>

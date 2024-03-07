@@ -100,6 +100,8 @@ export default function Sidebar() {
                     />
                   </div>
                 }
+                active={pathname === "/schedule"}
+                href="/schedule"
               >
                 Schedule
               </MenuItem>

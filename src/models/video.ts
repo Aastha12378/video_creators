@@ -7,6 +7,9 @@ const schema = new mongoose.Schema({
   category: String,
   videoURL: String,
   voiceURL: String,
-  absolutePath:String
+  absolutePath: String,
+  title: String,
+  suggestedVideos: [],
+  userId: String,
 });
 export const Video = mongoose.models.Video || mongoose.model("Video", schema);

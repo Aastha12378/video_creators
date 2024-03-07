@@ -31,7 +31,7 @@ type ButtonProps = Omit<
     color: string;
     leftIcon: React.ReactNode;
     rightIcon: React.ReactNode;
-    onClick: () => void;
+    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   }>;
 const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
   children,
@@ -46,15 +46,13 @@ const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
 }) => {
   return (
     <button
-      className={`${className} flex items-center justify-center text-center ${
-        (shape && shapes[shape]) || ""
-      } ${(size && sizes[size]) || ""} ${
-        (variant &&
+      className={`${className} flex items-center justify-center text-center ${(shape && shapes[shape]) || ""
+        } ${(size && sizes[size]) || ""} ${(variant &&
           variants[variant]?.[
-            color as keyof (typeof variants)[typeof variant]
+          color as keyof (typeof variants)[typeof variant]
           ]) ||
         ""
-      }`}
+        }`}
       {...restProps}
     >
       {!!leftIcon && leftIcon}
