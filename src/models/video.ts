@@ -5,6 +5,7 @@ const schema = new mongoose.Schema({
   script: String,
   keywords: [String],
   category: String,
+  prompt: String,
   videoURL: String,
   voiceURL: String,
   absolutePath: String,

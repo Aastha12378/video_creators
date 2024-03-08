@@ -39,6 +39,7 @@ export default async function DashboardPage({
 
       if (videoData.videoURL) {
         setStep(5);
+        setVideoConfig(videoData)
         setSuggestedVideos(videoData.suggestedVideos)
       } else if (videoData.suggestedVideos?.length > 0) {
         setSuggestedVideos(videoData.suggestedVideos)
@@ -114,6 +115,13 @@ export default async function DashboardPage({
                    {data?.scriptType === scriptType.Script && (
                     <Text as="p">
                       My Video title is: {data.title}
+                    </Text>
+                  )}
+                  {data?.scriptType === scriptType.Promt && (
+                    <Text as="p">
+                      My Video title is: {data.title}
+                      <br />
+                      Create a content according to this prompt: {data?.prompt}
                     </Text>
                   )}
                 </div>
