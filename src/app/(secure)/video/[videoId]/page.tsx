@@ -111,6 +111,11 @@ export default async function DashboardPage({
                       My Video title is: {data.title}
                     </Text>
                   )}
+                   {data?.scriptType === scriptType.Script && (
+                    <Text as="p">
+                      My Video title is: {data.title}
+                    </Text>
+                  )}
                 </div>
               </div>
             </div>

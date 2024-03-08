@@ -4,30 +4,34 @@ import connectDB from "@/utils/db";
 import { Video } from "@/models/video";
 import { scriptType } from "@/constant";
 
+const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+
 export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  const { category } = await req.json();
-  if (!category) {
+  const { script, title } = await req.json();
+  if (!script) {
     return NextResponse.json(
-      { message: "Category is required" },
+      { message: "Scipt is required" },
       { status: 400 }
     );
   }
+  if (!title) {
+    return NextResponse.json({ message: "Title is required" }, { status: 400 });
+  }
 
-  const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
   const assistantMsg =
-    "You are the AI programming Expert, specializing in generating script for youtube video on given user's category.";
+    "You are the AI programming Expert";
 
-  const userMsg = `You are tasked with generating 15 sec script for my you tube video on ${category} category.
+  const userMsg = `You are tasked with generating some keywords for given script. So that i find related videos which are related to given scripts by using that keywords. This script is used for generating youtube video.
   
-Also generate some keywords of that script. So that i find related videos which are related to your given scripts by using that keywords.
+This video title is ${title}
+This video script is ${script}
 
 return output in given json format :{
-  script:"",
   keywords:[], //it should be array of strings
 }
 **NOTE:-**
@@ -62,10 +66,11 @@ Output json is:
 
     // Insert the script into the collection
     const scriptDoc = new Video({
-      script: scriptData.script,
+      script: script,
       keywords: scriptData.keywords,
-      scriptType: scriptType.Category,
-      category,
+      scriptType: scriptType.Script,
+      title,
+      userId: user.id,
     });
     console.log("file: route.ts:70  POST  scriptDoc:", scriptDoc);
     await scriptDoc.save();
