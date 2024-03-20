@@ -10,7 +10,7 @@ import { PlatFormType, scriptType } from "@/constant";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Button } from "@/components/Button";
-import Modal from 'react-modal';  
+import Modal from 'react-modal';
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
@@ -23,13 +23,18 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     setLoading(true)
-    const videoData = (await apiClient(
-      "/api/video",
-      {},
-      "GET",
-    )) as VideoDataType[];
-    setLoading(false)
-    setData(videoData);
+    try {
+      const videoData = (await apiClient(
+        "/api/video",
+        {},
+        "GET",
+      )) as VideoDataType[];
+      setLoading(false)
+      setData(videoData);
+    } catch (err) {
+      setLoading(false)
+      console.log(err)
+    }
   };
 
   React.useEffect(() => {
@@ -72,7 +77,7 @@ export default function DashboardPage() {
           {
             data?.map((d, index) => {
               return <div key={index} className="w-full cursor-pointer" onClick={() => router.push(`/video/${d?._id}`)}>
-                <div className="h-[200px] radius-[15px] bg-gray-800"></div>
+                {d?.thumbnailURL ? <img style={{ height: 200 }} src={d?.thumbnailURL} /> : <div className="h-[200px] radius-[15px] bg-gray-800"></div>}
                 {d.scriptType === scriptType.Category && <Text className="!text-white-A700 mt-2"><b>Category:</b> {d.category}</Text>}
                 <Text className="!text-white-A700 mt-2" > <b>Title:</b> {d.title}</Text>
                 <Button color="teal_100_01"

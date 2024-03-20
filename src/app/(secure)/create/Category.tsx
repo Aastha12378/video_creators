@@ -1,6 +1,7 @@
 import { Button } from "@/components/Button";
 import { Text } from "@/components/Text";
 import { TextArea } from "@/components/TextArea";
+import { scriptType } from "@/constant";
 import { apiClient } from "@/utils/apiClient";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -11,7 +12,7 @@ export const CategoryForm = () => {
   const router = useRouter();
 
   const handleClick = async () => {
-    apiClient("/api/script/category", { category, title })
+    apiClient("/api/script/prompt", { category, prompt: title, type: scriptType.Category })
       .then((res: any) => {
         router.push(`/video/${res?._id}`);
       })

@@ -1,16 +1,28 @@
 import mongoose from "mongoose";
 
-const schema = new mongoose.Schema({
-  scriptType: Number,
-  script: String,
-  keywords: [String],
-  category: String,
-  prompt: String,
+export const Scene = new mongoose.Schema({
+  "sceneNumber": Number,
+  "sceneTitle":String,
+  "textOverlay": String,
+  "voiceover": String,
+  "searchQuery": String,
+  "resourceType": {
+    type:String,
+    enum:["video",'image'],
+    default:"video"
+  },
+  "audioDurationApprox": Number,
   videoURL: String,
   voiceURL: String,
   absolutePath: String,
+  voiceDuration:Number,
+});
+
+const schema = new mongoose.Schema({
+  prompt: String,
   title: String,
-  suggestedVideos: [],
   userId: String,
+  scenes:[Scene],
+  thumbnailURL:String
 });
 export const Video = mongoose.models.Video || mongoose.model("Video", schema);

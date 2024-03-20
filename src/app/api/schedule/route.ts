@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     if (scriptDoc) {
       // If it exists, update the scheduleTime
       scriptDoc.scheduleTime = scheduleTime;
+      scriptDoc.isUploaded = false;
     } else {
       // If it does not exist, create a new document
       scriptDoc = new Schedule({
@@ -44,6 +45,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         scheduleTime: scheduleTime,
         platform: platformType || PlatFormType.Youtube,
+        isUploaded: false,
       });
     }
 

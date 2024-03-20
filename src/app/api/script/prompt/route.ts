@@ -3,49 +3,58 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/utils/db";
 import { Video } from "@/models/video";
 import { scriptType } from "@/constant";
+import withPrompt from "@/prompts/withPrompt";
+import fetcher, { getThumbnail } from "@/utils/pexels";
+import voiceFetcher from "@/utils/voiceover";
+import withCategory from "@/prompts/withCategory";
+
+function getPromptFromUserRequest({prompt, title, type, category}:any){
+  if(type === scriptType.Promt){
+    return withPrompt({title,description:prompt})
+  } else if(type === scriptType.Category){
+    return withCategory({category})
+  }
+}
+
+function parseOpenAiResponse(content:string){
+  let dataString = content
+  if(content.startsWith("```json")){
+    const regex = /```json([\s\S]*?)```/g;
+    let match = regex.exec(content);
+    dataString = match ? match[1] : "{}";
+    dataString.replace("```json","").replace("```","")
+  }
+  return JSON.parse(dataString || "{}")
+}
 
 export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  const { prompt, title } = await req.json();
+
+  let { prompt, title, type, category } = await req.json();
+  if(!type) {
+    type = scriptType.Category
+    category = "Friend is blessing"
+  }
+
   if (!prompt) {
     return NextResponse.json(
       { message: "Prompt is required" },
       { status: 400 }
     );
   }
-  if (!title) {
-    return NextResponse.json({ message: "Title is required" }, { status: 400 });
-  }
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
   const assistantMsg =
-    "You are the AI programming Expert, specializing in generating script for youtube video according to given user's prompt.";
-
-  const userMsg = `You are tasked with generating 15 sec script for my you tube video according to given user's prompt.
-  
-This video title is ${title}
-User's prompt is: ${prompt}
-
-Also generate some keywords of that script. So that i find related videos which are related to your given scripts by using that keywords.
-
-return output in given json format :{
-  script:"",
-  keywords:[], //it should be array of strings
-}
-**NOTE:-**
-- always return json without any extra text
-
-Output json is:
-  `;
+    "You are the AI programming Expert, specializing in generating script for youtube video according to given instructions.";
 
   const body = JSON.stringify({
     messages: [
       { role: "assistant", content: assistantMsg },
-      { role: "user", content: userMsg },
+      { role: "user", content: getPromptFromUserRequest({prompt, title, type, category}) },
     ],
     model: "gpt-3.5-turbo",
     stream: false,
@@ -61,21 +70,24 @@ Output json is:
       body,
     });
     const data = await response.json();
-    const scriptData = JSON.parse(data?.choices?.[0]?.message?.content);
+    console.log(data?.choices?.[0]?.message?.content)
+    const scriptData = parseOpenAiResponse(data?.choices?.[0]?.message?.content || "");
 
     // Connect to the MongoDB client
     await connectDB();
+    const scenesWithResources = await fetcher(scriptData?.scenes);
+    const finalScenes = await voiceFetcher(scenesWithResources);
+    const thumbnailURL = await getThumbnail(scriptData?.videoThumbnailSearchQuery||scriptData?.scenes[0].searchQuery)
+    console.log(finalScenes);
 
     // Insert the script into the collection
     const scriptDoc = new Video({
-      script: scriptData.script,
-      keywords: scriptData.keywords,
-      scriptType: scriptType.Promt,
       prompt,
-      title,
+      title:scriptData?.videoTitle || title,
       userId: user.id,
+      scenes:finalScenes || [],
+      thumbnailURL
     });
-    console.log("file: route.ts:70  POST  scriptDoc:", scriptDoc);
     await scriptDoc.save();
 
     return NextResponse.json(scriptDoc, { status: 200 });

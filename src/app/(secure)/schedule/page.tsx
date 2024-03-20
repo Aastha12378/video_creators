@@ -3,8 +3,27 @@ import React from "react";
 import Sidebar from "@/components/Sidebar";
 import { Heading } from "@/components/Heading";
 import Header from "@/components/Header";
+import { Button } from "@/components/Button";
+import { apiClient } from "@/utils/apiClient";
+import { useUser } from "@clerk/nextjs";
 
 export default function DashboardPage() {
+  const { user } = useUser();
+  console.log('DashboardPage  user:', user)
+
+  const onAuthenticate = () => {
+    apiClient("/api/auth/youtube", {}, 'GET', { userId: user?.id })
+      .then((res: any) => {
+        console.log('.then  res:', res)
+        // if (res.redirect) {
+        //   window.open(res.redirect, '_blank');
+        // }
+        window.location.href = res.authorizeUrl;
+      })
+      .catch((err) => {
+        console.log('err=>', err);
+      });
+  }
 
   return (
     <div className="bg-gray-900 flex flex-row items-start w-full">
@@ -16,6 +35,7 @@ export default function DashboardPage() {
           <Heading className="!text-white-A700" size="lg">Schedule</Heading>
         </div>
         <div className="w-full px-[50px] py-[20px] grid grid-cols-3 gap-4">
+          <Button onClick={onAuthenticate}>Authenticate</Button>
         </div>
       </div>
     </div>

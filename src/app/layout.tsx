@@ -1,7 +1,6 @@
 "use client";
 import React, { ReactNode, Suspense } from "react";
 import "@/styles/tailwind.css";
-import { ProSidebarProvider } from "react-pro-sidebar";
 import "@/styles/index.css";
 import "@/styles/font.css";
 import {
@@ -17,14 +16,10 @@ function RootLayout({ children }: { children: ReactNode }) {
       <html lang="en">
         <body>
           <Suspense fallback={<p>Loading...</p>}>
-            <ProSidebarProvider>
-              {/* <SignedIn> */}
-              {children}
-              {/* </SignedIn> */}
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
-            </ProSidebarProvider>
+            {children}
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
           </Suspense>
         </body>
       </html>

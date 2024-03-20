@@ -5,23 +5,18 @@ import {
   MenuItem,
   Menu,
   Sidebar as ProSidebar,
-  useProSidebar,
 } from "react-pro-sidebar";
 import { Button } from "../Button";
 import { usePathname, useRouter } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
 
 export default function Sidebar() {
-  const { collapseSidebar, collapsed } = useProSidebar();
   const pathname = usePathname();
   const router = useRouter();
 
   return (
     <ProSidebar className="!sticky !w-[266px] h-screen overflow-auto bg-blue-800 top-[0]">
       <Img
-        onClick={() => {
-          collapseSidebar(!collapsed);
-        }}
         src="/images/img_logo.svg"
         alt="logo"
         className="h-10 mt-8 mx-auto"
@@ -45,34 +40,20 @@ export default function Sidebar() {
       >
         <div className="flex flex-col items-center justify-between mx-auto my-8 w-full h-full">
           <div className="flex flex-col gap-6 items-center justify-start w-full">
-            {collapsed ? (
-              <Button
-                size="xl"
-                className="flex flex-row gap-4 items-start justify-start w-full"
-                onClick={() => router.push("/create")}
-              >
+            <Button
+              size="xl"
+              className="flex flex-row gap-4 items-start justify-start w-full"
+              leftIcon={
                 <Img
                   src="/images/img_vector.svg"
                   alt="vector"
                   className="h-[19px]"
                 />
-              </Button>
-            ) : (
-              <Button
-                size="xl"
-                className="flex flex-row gap-4 items-start justify-start w-full"
-                leftIcon={
-                  <Img
-                    src="/images/img_vector.svg"
-                    alt="vector"
-                    className="h-[19px]"
-                  />
-                }
-                onClick={() => router.push("/create")}
-              >
-                Create
-              </Button>
-            )}
+              }
+              onClick={() => router.push("/create")}
+            >
+              Create
+            </Button>
 
             <div className="flex flex-col gap-[10px] justify-start pb-3 w-full">
               <MenuItem
