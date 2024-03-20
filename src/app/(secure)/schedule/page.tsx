@@ -6,12 +6,14 @@ import Header from "@/components/Header";
 import { Button } from "@/components/Button";
 import { apiClient } from "@/utils/apiClient";
 import { useUser } from "@clerk/nextjs";
+import { Text } from "@/components/Text";
 
 export default function DashboardPage() {
   const { user } = useUser();
-  console.log('DashboardPage  user:', user)
+  const [loading, setLoading] = React.useState(false)
 
   const onAuthenticate = () => {
+    setLoading(true)
     apiClient("/api/auth/youtube", {}, 'GET', { userId: user?.id })
       .then((res: any) => {
         console.log('.then  res:', res)
@@ -22,6 +24,8 @@ export default function DashboardPage() {
       })
       .catch((err) => {
         console.log('err=>', err);
+      }).finally(() => {
+        setLoading(false)
       });
   }
 
@@ -35,7 +39,8 @@ export default function DashboardPage() {
           <Heading className="!text-white-A700" size="lg">Schedule</Heading>
         </div>
         <div className="w-full px-[50px] py-[20px] grid grid-cols-3 gap-4">
-          <Button onClick={onAuthenticate}>Authenticate</Button>
+          {loading && <div><Text className="!text-white-A700 mt-2">Loading...</Text></div>}
+          {!loading && <Button onClick={onAuthenticate}>Authenticate</Button>}
         </div>
       </div>
     </div>

@@ -12,6 +12,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Button } from "@/components/Button";
 import Modal from 'react-modal';
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 export default function DashboardPage() {
   const [data, setData] = React.useState<VideoDataType[]>([]);
@@ -20,6 +21,9 @@ export default function DashboardPage() {
   const [selectedVideo, setSelectedVideo] = React.useState<VideoDataType | {}>({});
   const [loading, setLoading] = React.useState(true)
   const router = useRouter();
+  const [authenticationModalOpen, setAuthenticationModal] = React.useState(false);
+  const { user } = useUser();
+  const [isAuthenticating, setAuthenticating] = React.useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -42,13 +46,25 @@ export default function DashboardPage() {
   }, []);
 
   const openScheduleModal = (event: React.MouseEvent<HTMLButtonElement>, video: VideoDataType) => {
-    if (video.scheduleTime) {
-      const date = new Date(video.scheduleTime);
-      setScheduleTime(date);
-    }
+    //check for authentication
     event.stopPropagation();
-    setSelectedVideo(video);
-    setModalIsOpen(true);
+    apiClient("/api/user", {}, 'GET')
+      .then((res: any) => {
+        if (res.userId) {
+          if (video.scheduleTime) {
+            const date = new Date(video.scheduleTime);
+            setScheduleTime(date);
+          }
+          setSelectedVideo(video);
+          setModalIsOpen(true);
+        } else {
+          console.log("--------")
+          setAuthenticationModal(true);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const onScheduleTime = () => {
@@ -59,6 +75,23 @@ export default function DashboardPage() {
       })
       .catch((err) => {
         console.log(err);
+      });
+  }
+
+  const onAuthenticate = () => {
+    setAuthenticating(true)
+    apiClient("/api/auth/youtube", {}, 'GET', { userId: user?.id })
+      .then((res: any) => {
+        console.log('.then  res:', res)
+        // if (res.redirect) {
+        //   window.open(res.redirect, '_blank');
+        // }
+        window.location.href = res.authorizeUrl;
+      })
+      .catch((err) => {
+        console.log('err=>', err);
+      }).finally(() => {
+        setAuthenticating(false)
       });
   }
 
@@ -120,6 +153,28 @@ export default function DashboardPage() {
               dateFormat="Pp"
             />
             <Button className="!rounded-md font-semibold w-[100px]" onClick={() => onScheduleTime()}>Submit</Button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={authenticationModalOpen}
+        onRequestClose={() => setAuthenticationModal(false)}
+        contentLabel="Authentication"
+      >
+        <div className="bg-gray-900 w-full h-full p-[40px]">
+          <div className="flex justify-between items-center p-4 border-b border-gray-200">
+            <Heading size="lg" className="!text-white-A700">
+              Authentication
+            </Heading>
+            <button onClick={() => setAuthenticationModal(false)}>
+              <span className="text-2xl font-semibold text-white-A700">&times;</span>
+            </button>
+          </div>
+          <div className="flex flex-col gap-4 mt-[20px]">
+            <Text size="s" as="p" className="!text-white-A700">
+              For Scheduling video upload needs to access your Google Account
+            </Text>
+            <Button className="!rounded-md font-semibold w-[200px]" onClick={() => onAuthenticate()}>{isAuthenticating ? 'Loading...' : `Authentication`}</Button>
           </div>
         </div>
       </Modal>

@@ -71,7 +71,7 @@ export default function Sidebar() {
               >
                 Home
               </MenuItem>
-              <MenuItem
+              {/* <MenuItem
                 icon={
                   <div className="h-6 w-6">
                     <Img
@@ -85,7 +85,7 @@ export default function Sidebar() {
                 href="/schedule"
               >
                 Schedule
-              </MenuItem>
+              </MenuItem> */}
             </div>
           </div>
           <div className="flex flex-row items-center justify-evenly w-full">

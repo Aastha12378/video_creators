@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs";
 import { google } from "googleapis";
 import connectDB from "@/utils/db";
@@ -10,18 +10,21 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.YOUTUBE_REDIRECT_URI
 );
 
-export async function GET(req: any, res: any) {
+export async function POST(req: NextRequest, res: any) {
   console.log("-----------");
-  const urlParams = new URLSearchParams(req.url.split("?")[1]);
-  const code = urlParams.get("code");
-  console.log("code:", code);
+  let { code } = await req.json();
+  const user = await currentUser();
 
-  if (code) {
+  const userData = await User.find({ userId: user?.id })
+    .lean()
+    .exec();
+  console.log("userData:", userData);
+
+  if (code && (!userData || userData?.length <= 0)) {
     const { tokens } = await oauth2Client.getToken(code);
 
     // Connect to the MongoDB client
     await connectDB();
-    const user = await currentUser();
 
     // Insert the script into the collection
     const scriptDoc = new User({
@@ -30,6 +33,6 @@ export async function GET(req: any, res: any) {
     });
     await scriptDoc.save();
 
-    return NextResponse.redirect("http://localhost:3000/schedule", 307);
+    return NextResponse.json({ redirectUrl: "/" }, { status: 200 });
   }
 }

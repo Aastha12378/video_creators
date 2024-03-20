@@ -7,24 +7,33 @@ import withPrompt from "@/prompts/withPrompt";
 import fetcher, { getThumbnail } from "@/utils/pexels";
 import voiceFetcher from "@/utils/voiceover";
 import withCategory from "@/prompts/withCategory";
+import withScript from "@/prompts/withScript";
 
-function getPromptFromUserRequest({prompt, title, type, category}:any){
-  if(type === scriptType.Promt){
-    return withPrompt({title,description:prompt})
-  } else if(type === scriptType.Category){
-    return withCategory({category})
+function getPromptFromUserRequest({
+  prompt,
+  title,
+  type,
+  category,
+  script,
+}: any) {
+  if (type === scriptType.Prompt) {
+    return withPrompt({ title, description: prompt });
+  } else if (type === scriptType.Category) {
+    return withCategory({ category });
+  } else if (type === scriptType.Script) {
+    return withScript({ title, script });
   }
 }
 
-function parseOpenAiResponse(content:string){
-  let dataString = content
-  if(content.startsWith("```json")){
+function parseOpenAiResponse(content: string) {
+  let dataString = content;
+  if (content.startsWith("```json")) {
     const regex = /```json([\s\S]*?)```/g;
     let match = regex.exec(content);
     dataString = match ? match[1] : "{}";
-    dataString.replace("```json","").replace("```","")
+    dataString.replace("```json", "").replace("```", "");
   }
-  return JSON.parse(dataString || "{}")
+  return JSON.parse(dataString || "{}");
 }
 
 export async function POST(req: NextRequest) {
@@ -33,15 +42,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  let { prompt, title, type, category } = await req.json();
-  if(!type) {
-    type = scriptType.Category
-    category = "Friend is blessing"
+  let { prompt, title, type, category, script } = await req.json();
+  if (!type) {
+    type = scriptType.Category;
+    category = "Friend is blessing";
   }
 
-  if (!prompt) {
+  if (!prompt && type === scriptType.Prompt) {
     return NextResponse.json(
       { message: "Prompt is required" },
+      { status: 400 }
+    );
+  }
+
+  if (!script && type === scriptType.Script) {
+    return NextResponse.json(
+      { message: "Script is required" },
       { status: 400 }
     );
   }
@@ -54,7 +70,16 @@ export async function POST(req: NextRequest) {
   const body = JSON.stringify({
     messages: [
       { role: "assistant", content: assistantMsg },
-      { role: "user", content: getPromptFromUserRequest({prompt, title, type, category}) },
+      {
+        role: "user",
+        content: getPromptFromUserRequest({
+          prompt,
+          title,
+          type,
+          category,
+          script,
+        }),
+      },
     ],
     model: "gpt-3.5-turbo",
     stream: false,
@@ -70,23 +95,27 @@ export async function POST(req: NextRequest) {
       body,
     });
     const data = await response.json();
-    console.log(data?.choices?.[0]?.message?.content)
-    const scriptData = parseOpenAiResponse(data?.choices?.[0]?.message?.content || "");
+    console.log(data?.choices?.[0]?.message?.content);
+    const scriptData = parseOpenAiResponse(
+      data?.choices?.[0]?.message?.content || ""
+    );
 
     // Connect to the MongoDB client
     await connectDB();
     const scenesWithResources = await fetcher(scriptData?.scenes);
     const finalScenes = await voiceFetcher(scenesWithResources);
-    const thumbnailURL = await getThumbnail(scriptData?.videoThumbnailSearchQuery||scriptData?.scenes[0].searchQuery)
+    const thumbnailURL = await getThumbnail(
+      scriptData?.videoThumbnailSearchQuery || scriptData?.scenes[0].searchQuery
+    );
     console.log(finalScenes);
 
     // Insert the script into the collection
     const scriptDoc = new Video({
       prompt,
-      title:scriptData?.videoTitle || title,
+      title: scriptData?.videoTitle || title,
       userId: user.id,
-      scenes:finalScenes || [],
-      thumbnailURL
+      scenes: finalScenes || [],
+      thumbnailURL,
     });
     await scriptDoc.save();
 

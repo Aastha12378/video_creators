@@ -1,6 +1,6 @@
 export const scriptType = {
   Category: 1,
-  Promt: 2,
+  Prompt: 2,
   Script: 3,
 };
 

@@ -10,14 +10,19 @@ export const PromptForm = () => {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
   const router = useRouter();
+  const [loading, setLoading] = useState(false)
 
   const handleClick = async () => {
-    apiClient("/api/script/prompt", { prompt, title, type: scriptType.Promt })
+    setLoading(true)
+    apiClient("/api/script/prompt", { prompt, title, type: scriptType.Prompt })
       .then((res: any) => {
         router.push(`/video/${res?._id}`);
       })
       .catch((err) => {
         console.log(err);
+      })
+      .finally(() => {
+        setLoading(false)
       });
   };
 
@@ -50,7 +55,7 @@ export const PromptForm = () => {
         </div>
       </div>
       <Button onClick={handleClick} className="!rounded-md font-semibold min-w-[146px]">
-        Generate script
+        {loading ? 'Loading...' : 'Generate script'}
       </Button>
     </div>
   );

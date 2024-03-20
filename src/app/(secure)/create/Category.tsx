@@ -10,14 +10,19 @@ export const CategoryForm = () => {
   const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
   const router = useRouter();
+  const [loading, setLoading] = useState(false)
 
   const handleClick = async () => {
+    setLoading(true)
     apiClient("/api/script/prompt", { category, prompt: title, type: scriptType.Category })
       .then((res: any) => {
         router.push(`/video/${res?._id}`);
       })
       .catch((err) => {
         console.log(err);
+      })
+      .finally(() => {
+        setLoading(false)
       });
   };
 
@@ -54,7 +59,7 @@ export const CategoryForm = () => {
         className="!rounded-md font-semibold min-w-[146px]"
         onClick={handleClick}
       >
-        Generate script
+        {loading ? 'Loading...' : 'Generate script'}
       </Button>
     </div>
   );
