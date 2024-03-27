@@ -46,25 +46,10 @@ export default async function DashboardPage(props: IProps) {
   }, [params.videoId]);
 
   const generateVideo = async () => {
-    const client = createClient('hPds4JSGob2ANlkoFkky2tDoG77H1a8oCx6MOewnF5Evmldd1qsn8wP4');
-    const orientation = "portrait"
-    client.videos.search({ query: "dark wolf", per_page: 10, orientation }).then(async (video) => {
-      console.log(video)
-    }).catch(err => {
-      console.log(err)
-    })
-  };
-
-  const onSelectVideo = (videoUrl: string) => {
-    setStep(4)
-    apiClient("/api/video/" + params.videoId, { videoURL: videoUrl }, "PATCH")
+    apiClient("/api/video/download", { id: params.videoId })
       .then((res: any) => {
-        console.log(res)
-        setData(res);
-        setVideoConfig(res)
-        if (res.videoURL) {
-          setStep(5);
-        }
+        console.log(res);
+        alert("Your video is set to download, visit Home page to see if it's done.")
       })
       .catch((err) => {
         console.log(err);
@@ -78,38 +63,6 @@ export default async function DashboardPage(props: IProps) {
         <Header />
         <div className="bg-blue_gray-800 h-px mt-5 w-full" />
         <div className="flex flex-col gap-[50px] items-center justify-start mt-[19px] p-[50px] w-full">
-          {/* <div className="flex flex-row items-center justify-start pr-[330px] w-[91%]">
-            <div className="flex flex-row gap-2.5 items-end w-full">
-              <Img
-                src="/images/img_user_avatar_1.png"
-                alt="user_avatar_One"
-                className="h-[38px] object-cover rounded-lg"
-              />
-              <div className="bg-white-A700 flex flex-row items-center justify-start p-5 rounded-lg">
-                <div className="flex flex-row items-center justify-start w-full">
-                  {data?.scriptType === scriptType.Category && (
-                    <Text as="p">
-                      Create a content for this category: {data?.category}
-                      <br />
-                      My Video title is: {data.title}
-                    </Text>
-                  )}
-                  {data?.scriptType === scriptType.Script && (
-                    <Text as="p">
-                      My Video title is: {data.title}
-                    </Text>
-                  )}
-                  {data?.scriptType === scriptType.Promt && (
-                    <Text as="p">
-                      My Video title is: {data.title}
-                      <br />
-                      Create a content according to this prompt: {data?.prompt}
-                    </Text>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div> */}
           {step >= 5 && scenes.length > 0 && <div className="flex flex-row items-center justify-center pl-[330px] w-[91%]">
             <div className="flex flex-row gap-2.5 items-end justify-end w-full">
               <div className="bg-teal-50 flex flex-col gap-2.5 items-start justify-start p-5 rounded-lg w-[400px]">
@@ -122,7 +75,7 @@ export default async function DashboardPage(props: IProps) {
                       className="min-w-[96px]"
                       onClick={generateVideo}
                     >
-                      Download
+                      Schedule Download
                     </Button>
                   </div>
                 </div>

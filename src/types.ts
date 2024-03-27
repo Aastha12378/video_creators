@@ -12,6 +12,7 @@ export type VideoDataType = {
   suggestedVideos: Video[];
   scheduleTime?: Date;
   prompt:string;
+  scenes:IScene[];
   _id: string;
 };
 

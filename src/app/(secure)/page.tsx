@@ -11,6 +11,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Button } from "@/components/Button";
 import Modal from 'react-modal';
+import VideoCard from "@/components/VideoCard";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 
@@ -20,7 +21,7 @@ export default function DashboardPage() {
   const [scheduleTime, setScheduleTime] = React.useState<Date | null>(null);
   const [selectedVideo, setSelectedVideo] = React.useState<VideoDataType | {}>({});
   const [loading, setLoading] = React.useState(true)
-  const router = useRouter();
+const router = useRouter();
   const [authenticationModalOpen, setAuthenticationModal] = React.useState(false);
   const { user } = useUser();
   const [isAuthenticating, setAuthenticating] = React.useState(false)
@@ -46,18 +47,18 @@ export default function DashboardPage() {
   }, []);
 
   const openScheduleModal = (event: React.MouseEvent<HTMLButtonElement>, video: VideoDataType) => {
-    //check for authentication
+//check for authentication
     event.stopPropagation();
     apiClient("/api/user", {}, 'GET')
       .then((res: any) => {
         if (res.userId) {
-          if (video.scheduleTime) {
-            const date = new Date(video.scheduleTime);
-            setScheduleTime(date);
-          }
-          setSelectedVideo(video);
-          setModalIsOpen(true);
-        } else {
+    if (video.scheduleTime) {
+      const date = new Date(video.scheduleTime);
+      setScheduleTime(date);
+    }
+        setSelectedVideo(video);
+    setModalIsOpen(true);
+} else {
           console.log("--------")
           setAuthenticationModal(true);
         }
@@ -109,15 +110,7 @@ export default function DashboardPage() {
         <div className="w-full px-[50px] py-[20px] grid grid-cols-3 gap-4">
           {
             data?.map((d, index) => {
-              return <div key={index} className="w-full cursor-pointer" onClick={() => router.push(`/video/${d?._id}`)}>
-                {d?.thumbnailURL ? <img style={{ height: 200 }} src={d?.thumbnailURL} /> : <div className="h-[200px] radius-[15px] bg-gray-800"></div>}
-                {d.scriptType === scriptType.Category && <Text className="!text-white-A700 mt-2"><b>Category:</b> {d.category}</Text>}
-                <Text className="!text-white-A700 mt-2" > <b>Title:</b> {d.title}</Text>
-                <Button color="teal_100_01"
-                  size="sm"
-                  onClick={(event) => openScheduleModal(event, d)}
-                >Schedule posting</Button>
-              </div>
+              return <VideoCard key={index} data={d} openScheduleModal={openScheduleModal} />
             })
           }
         </div>
@@ -156,7 +149,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </Modal>
-      <Modal
+<Modal
         isOpen={authenticationModalOpen}
         onRequestClose={() => setAuthenticationModal(false)}
         contentLabel="Authentication"

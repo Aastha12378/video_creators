@@ -4,7 +4,8 @@ import {
   useVideoConfig,
   Audio,
   prefetch,
-  Series
+  Series,
+  OffthreadVideo
 } from "remotion";
 import React, { useMemo } from "react";
 import { loadFont } from "@remotion/google-fonts/Kalam";
@@ -45,7 +46,7 @@ export const Main = ({ scenes }: { scenes: IScene[] }) => {
           <Series.Sequence key={index} durationInFrames={fps * (scene.audioDurationApprox || 2.5)}>
             <AbsoluteFill style={logo}>
               {scene.voiceURL && <Audio volume={1} src={scene.voiceURL} />}
-              <Video loop volume={0} src={scene.videoURL} />
+              <OffthreadVideo volume={0} src={scene.videoURL} />
               <div style={{
                 display: "flex",
                 flex: 1,

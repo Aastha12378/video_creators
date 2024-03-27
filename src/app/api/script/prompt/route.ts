@@ -20,7 +20,7 @@ function getPromptFromUserRequest({
     return withPrompt({ title, description: prompt });
   } else if (type === scriptType.Category) {
     return withCategory({ category });
-  } else if (type === scriptType.Script) {
+} else if (type === scriptType.Script) {
     return withScript({ title, script });
   }
 }
@@ -116,11 +116,14 @@ export async function POST(req: NextRequest) {
       userId: user.id,
       scenes: finalScenes || [],
       thumbnailURL,
+      renderId: "asdf",
+      functionName: "functionName",
     });
     await scriptDoc.save();
 
     return NextResponse.json(scriptDoc, { status: 200 });
   } catch (error: any) {
+    console.log(error);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
