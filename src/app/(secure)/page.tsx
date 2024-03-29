@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const [scheduleTime, setScheduleTime] = React.useState<Date | null>(null);
   const [selectedVideo, setSelectedVideo] = React.useState<VideoDataType | {}>({});
   const [loading, setLoading] = React.useState(true)
-const router = useRouter();
+  const router = useRouter();
   const [authenticationModalOpen, setAuthenticationModal] = React.useState(false);
   const { user } = useUser();
   const [isAuthenticating, setAuthenticating] = React.useState(false)
@@ -47,18 +47,19 @@ const router = useRouter();
   }, []);
 
   const openScheduleModal = (event: React.MouseEvent<HTMLButtonElement>, video: VideoDataType) => {
-//check for authentication
+    console.log("-----")
+    //check for authentication
     event.stopPropagation();
     apiClient("/api/user", {}, 'GET')
       .then((res: any) => {
         if (res.userId) {
-    if (video.scheduleTime) {
-      const date = new Date(video.scheduleTime);
-      setScheduleTime(date);
-    }
-        setSelectedVideo(video);
-    setModalIsOpen(true);
-} else {
+          if (video.scheduleTime) {
+            const date = new Date(video.scheduleTime);
+            setScheduleTime(date);
+          }
+          setSelectedVideo(video);
+          setModalIsOpen(true);
+        } else {
           console.log("--------")
           setAuthenticationModal(true);
         }
@@ -149,7 +150,7 @@ const router = useRouter();
           </div>
         </div>
       </Modal>
-<Modal
+      <Modal
         isOpen={authenticationModalOpen}
         onRequestClose={() => setAuthenticationModal(false)}
         contentLabel="Authentication"

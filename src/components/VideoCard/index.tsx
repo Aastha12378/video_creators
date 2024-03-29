@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useRouter } from "next/navigation";
 import { Text } from "../Text";
 import { scriptType } from "@/constant";
@@ -16,22 +16,32 @@ export default function VideoCard({ data: d, openScheduleModal }: any) {
   const router = useRouter();
 
   const [progress, setProgress] = React.useState(0);
-  const [isDownloaded, setIsDownloaded] = React.useState(true);
+  const [isDownloaded, setIsDownloaded] = React.useState(false);
   const intervalRef = React.useRef<any>(null);
 
   React.useEffect(() => {
-    console.log(d.renderId, d.functionName)
+    console.log(d.renderId, d.functionName);
     intervalRef.current = setInterval(async () => {
       if (d.renderId && d.renderId !== "asdf" && d.functionName) {
-        console.log("asdf", d.renderId, process.env.S3_BUCKET_NAME, d.functionName);
-        apiClient("/api/video/getRenderStatus", { renderId: d.renderId, functionName: d.functionName }, "POST")
+        console.log(
+          "asdf",
+          d.renderId,
+          process.env.S3_BUCKET_NAME,
+          d.functionName
+        );
+        apiClient(
+          "/api/video/getRenderStatus",
+          { renderId: d.renderId, functionName: d.functionName },
+          "POST"
+        )
           .then((res: any) => {
+            console.log(".then  res:", res);
             if (res.overallProgress >= 1) {
-              clearInterval(intervalRef.current)
-              setProgress(res.overallProgress * 100)
-              setIsDownloaded(true)
+              clearInterval(intervalRef.current);
+              setProgress(res.overallProgress * 100);
+              setIsDownloaded(true);
             } else {
-              setProgress(res.overallProgress * 100)
+              setProgress(res.overallProgress * 100);
             }
           })
           .catch((err) => {
@@ -46,24 +56,43 @@ export default function VideoCard({ data: d, openScheduleModal }: any) {
   }, [d.renderId, d.functionName]);
 
   return (
-    <div className="w-full cursor-pointer" onClick={() => router.push(`/video/${d?._id}`)}>
-      {d?.thumbnailURL ? <img style={{ height: 200 }} src={d?.thumbnailURL} /> : <div className="h-[200px] radius-[15px] bg-gray-800"></div>}
-      {d.scriptType === scriptType.Category && <Text className="!text-white-A700 mt-2"><b>Category:</b> {d.category}</Text>}
-      <Text className="!text-white-A700 mt-2" > <b>Title:</b> {d.title}</Text>
+    <div
+      className="w-full cursor-pointer"
+      onClick={() => router.push(`/video/${d?._id}`)}
+    >
+      {d?.thumbnailURL ? (
+        <img style={{ height: 200 }} src={d?.thumbnailURL} />
+      ) : (
+        <div className="h-[200px] radius-[15px] bg-gray-800"></div>
+      )}
+      {d.scriptType === scriptType.Category && (
+        <Text className="!text-white-A700 mt-2">
+          <b>Category:</b> {d.category}
+        </Text>
+      )}
+      <Text className="!text-white-A700 mt-2">
+        {" "}
+        <b>Title:</b> {d.title}
+      </Text>
       <div className="flex gap-5 items-center">
-        <Button color="teal_100_01"
+        <Button
+          color="teal_100_01"
           size="sm"
           className="min-w-[130px]"
           onClick={(event: any) => openScheduleModal(event, d)}
           disabled={!isDownloaded}
-        >Schedule posting</Button>
-        {
-          !isDownloaded &&
+        >
+          Schedule posting
+        </Button>
+        {!isDownloaded && (
           <div className="relative w-full h-2 bg-gray-200 rounded">
-            <div className="absolute left-0 top-0 h-2 bg-green-500 rounded" style={{ width: `${progress}%` }}></div>
+            <div
+              className="absolute left-0 top-0 h-2 bg-green-500 rounded"
+              style={{ width: `${progress}%` }}
+            ></div>
           </div>
-        }
+        )}
       </div>
     </div>
-  )
+  );
 }

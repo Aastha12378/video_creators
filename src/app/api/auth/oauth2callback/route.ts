@@ -10,18 +10,19 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.YOUTUBE_REDIRECT_URI
 );
 
-export async function GET(req: any, res: any) {
+export async function POST(req: any, res: any) {
   console.log("-----------");
-  const urlParams = new URLSearchParams(req.url.split("?")[1]);
-  const code = urlParams.get("code");
-  // let { code } = await req.json();
+  // const urlParams = new URLSearchParams(req.url.split("?")[1]);
+  // const code = urlParams.get("code");
+  let { code } = await req.json();
   const user = await currentUser();
 
   const userData = await User.find({ userId: user?.id })
     .lean()
     .exec();
+  console.log(code, userData);
 
-  if (code  && (!userData || userData?.length <= 0)) {
+  if (code && (!userData || userData?.length <= 0)) {
     const { tokens } = await oauth2Client.getToken(code);
 
     // Connect to the MongoDB client
@@ -34,8 +35,9 @@ export async function GET(req: any, res: any) {
     });
     await scriptDoc.save();
 
-    // return NextResponse.json({ redirectUrl: "/" }, { status: 200 });
+    return NextResponse.json({ redirectUrl: "/" }, { status: 200 });
 
-    return NextResponse.redirect("http://localhost:3000/schedule", 307);
+    // return NextResponse.redirect("http://localhost:3000/schedule", 307);
   }
+  return NextResponse.json({ redirectUrl: "/" }, { status: 200 });
 }

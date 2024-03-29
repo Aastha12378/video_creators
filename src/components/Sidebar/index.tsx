@@ -17,9 +17,9 @@ export default function Sidebar() {
   return (
     <ProSidebar className="!sticky !w-[266px] h-screen overflow-auto bg-blue-800 top-[0]">
       <Img
-        src="/images/img_logo.svg"
+        src="/images/logo.jpeg"
         alt="logo"
-        className="h-10 mt-8 mx-auto"
+        className="h-[100px] w-[90%] mt-8 mx-auto"
       />
       <Menu
         menuItemStyles={{
@@ -71,7 +71,7 @@ export default function Sidebar() {
               >
                 Home
               </MenuItem>
-              <MenuItem
+              {/* <MenuItem
                 icon={
                   <div className="h-6 w-6">
                     <Img
@@ -85,7 +85,7 @@ export default function Sidebar() {
                 href="/schedule"
               >
                 Schedule
-              </MenuItem>
+              </MenuItem> */}
             </div>
           </div>
           <div className="flex flex-row items-center justify-evenly w-full">
